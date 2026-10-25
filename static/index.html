@@ -1,0 +1,717 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Student Compass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+<style>
+/* Three views: home (text beside the paths animation), marks, careers (inputs left, results right). */
+:root{
+  --bg:#FAF9F5; --surface:#FFFFFF; --sunk:#F3F1EA; --ink:#1F1E1D; --ink-2:#3D3C39; --muted:#73726C; --faint:#A8A69E;
+  --line:#E6E3DA; --line-2:#EFEDE6; --accent:#C15F3C; --accent-soft:#F6E7DF;
+  --warn:#9A6212; --warn-soft:#FBF0DA; --warn-line:#EBCF9A;
+  --bad:#A33A2C; --bad-soft:#F8E4E0; --good:#4E6B45; --good-soft:#E6EDE1;
+  --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  --sans:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"Geist Mono",ui-monospace,"SF Mono",Consolas,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#1C1B19; --surface:#242321; --sunk:#201F1D; --ink:#EEECE5; --ink-2:#D3D0C7; --muted:#9C9A92; --faint:#6E6C66;
+    --line:#35342F; --line-2:#2D2C29; --accent:#DE8A67; --accent-soft:#3A2A22;
+    --warn:#E2B258; --warn-soft:#352C1B; --warn-line:#5C4A26;
+    --bad:#E28B7E; --bad-soft:#3A2522; --good:#A2BD95; --good-soft:#26301F;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#1C1B19; --surface:#242321; --sunk:#201F1D; --ink:#EEECE5; --ink-2:#D3D0C7; --muted:#9C9A92; --faint:#6E6C66;
+  --line:#35342F; --line-2:#2D2C29; --accent:#DE8A67; --accent-soft:#3A2A22;
+  --warn:#E2B258; --warn-soft:#352C1B; --warn-line:#5C4A26;
+  --bad:#E28B7E; --bad-soft:#3A2522; --good:#A2BD95; --good-soft:#26301F;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+[hidden]{display:none!important}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1200px;margin:0 auto;padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:10px;margin-right:auto;min-width:0;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.brand h1{font:500 19px/1.2 var(--serif);margin:0;letter-spacing:-.01em}
+.brand span{color:var(--muted);font-size:12.5px}
+.switch{display:inline-flex;align-items:center;gap:8px;cursor:pointer;color:var(--ink-2);font-size:13px;user-select:none;background:none;border:0;padding:4px 2px}
+.track{width:30px;height:18px;border-radius:9px;background:var(--line);position:relative;transition:background .2s}
+.track::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--surface);box-shadow:0 1px 2px rgb(0 0 0/.18);transition:transform .2s}
+.switch[aria-checked="true"] .track{background:var(--accent)}
+.switch[aria-checked="true"] .track::after{transform:translateX(12px)}
+
+.wrap{max-width:1200px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.tabs{display:inline-flex;gap:2px;background:var(--sunk);border:1px solid var(--line-2);border-radius:8px;padding:3px;margin-bottom:20px;max-width:100%;overflow-x:auto}
+.tabs button{background:none;border:0;border-radius:6px;padding:6px 14px;cursor:pointer;color:var(--muted);font-size:13.5px;white-space:nowrap}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+
+/* home */
+.home{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:32px;align-items:center;min-height:min(560px,calc(100vh - 150px))}
+.hero-text{display:flex;flex-direction:column;gap:16px;max-width:480px}
+.display{font:400 clamp(34px,4.6vw,52px)/1.06 var(--serif);letter-spacing:-.02em;margin:0;text-wrap:balance}
+.display em{font-style:italic;color:var(--accent)}
+.lede{margin:0;color:var(--ink-2);font-size:15.5px;max-width:42ch}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+.facts{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px;padding-top:16px;border-top:1px solid var(--line-2);font-size:12.5px;color:var(--muted)}
+.facts b{font:500 13px var(--mono);color:var(--ink);margin-right:4px}
+.hero-art{position:relative;height:440px;min-width:0}
+.hero-art canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:var(--bg);border:1px solid var(--ink);border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:500;font-size:13.5px}
+.btn:hover{background:var(--ink-2)}
+.btn.ghost{background:none;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{background:var(--sunk)}
+.btn:disabled{opacity:.55;cursor:progress}
+
+.view{display:grid;grid-template-columns:minmax(0,430px) minmax(0,1fr);gap:28px;align-items:start}
+.inputs,.results{display:flex;flex-direction:column;gap:14px;min-width:0}
+
+.card,.sec{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.card-h,.sec>h3{margin:0;padding:12px 16px 10px;font:500 11px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line-2);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.card-h h3{margin:0;font:inherit}
+.card-h small,.sec>h3 small{font:11px var(--mono);letter-spacing:0;text-transform:none;color:var(--faint)}
+.card-b{padding:12px 16px 14px;display:flex;flex-direction:column;gap:10px}
+.link{background:none;border:0;padding:0;color:var(--accent);cursor:pointer;font:500 12px var(--sans);letter-spacing:0;text-transform:none}
+.hint{margin:0;color:var(--muted);font-size:12.5px}
+.actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.err{border:1px solid var(--bad);background:var(--bad-soft);color:var(--bad);border-radius:8px;padding:10px 12px;font-size:13px}
+
+.field{display:grid;grid-template-columns:110px minmax(0,1fr);align-items:center;gap:10px}
+.field>span{color:var(--muted);font-size:13px}
+input[type=text],input[type=number],select,textarea{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 9px;width:100%;min-width:0}
+textarea{resize:vertical;min-height:64px;line-height:1.5}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:0}
+.suffix{display:flex;align-items:center;gap:6px}
+.suffix input{width:80px}
+.suffix i{font-style:normal;color:var(--muted)}
+
+.scroll{overflow-x:auto}
+.marks{border-collapse:collapse;width:100%;font-size:13px}
+.marks th{font:500 11px/1.2 var(--sans);color:var(--faint);text-align:center;padding:10px 4px 6px;white-space:nowrap}
+.marks th:first-child{text-align:left;padding-left:16px}
+.marks td{padding:4px;border-top:1px solid var(--line-2)}
+.marks td:first-child{padding-left:16px;color:var(--ink-2);white-space:nowrap}
+.marks td:last-child,.marks th:last-child{padding-right:16px}
+.marks input{width:58px;text-align:center;font-family:var(--mono);font-variant-numeric:tabular-nums;padding:5px 4px}
+
+.q-t{font-weight:500;color:var(--ink);margin:0}
+.q-n{font:11px var(--mono);color:var(--faint)}
+.taps{display:flex;flex-wrap:wrap;gap:6px}
+.taps button{font-size:12.5px;border:1px solid var(--line-2);border-radius:999px;padding:3px 10px;color:var(--muted);background:var(--bg);cursor:pointer;text-align:left}
+.taps button:hover{border-color:var(--line);color:var(--ink-2)}
+
+.skill{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px}
+.skill>span{color:var(--ink-2)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg label{position:relative;cursor:pointer}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg span{display:block;width:32px;text-align:center;padding:4px 0;font:12.5px var(--mono);color:var(--muted);border-left:1px solid var(--line-2)}
+.seg label:first-child span{border-left:0}
+.seg label:hover span{background:var(--sunk)}
+.seg input:checked+span{background:var(--accent);color:var(--surface)}
+.seg input:focus-visible+span{outline:2px solid var(--accent);outline-offset:-2px}
+
+.head{padding:2px 0 6px}
+.eyebrow{display:block;font:500 11px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.head h2{font:400 30px/1.15 var(--serif);letter-spacing:-.015em;margin:0 0 6px;text-wrap:balance}
+.head .by{color:var(--muted);font-size:14px}
+.stats{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;font-size:12.5px;color:var(--muted)}
+.stats b{font:500 13px var(--mono);color:var(--ink);margin-right:4px;font-variant-numeric:tabular-nums}
+
+.flags{border:1px solid var(--warn-line);background:var(--warn-soft);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.flags h3{margin:0;font:600 12.5px/1.2 var(--sans);color:var(--warn);display:flex;align-items:center;gap:8px}
+.flags.ok{border-color:var(--line);background:var(--good-soft)}
+.flags.ok h3{color:var(--good)}
+.flag b{display:block;font-weight:500;color:var(--ink)}
+.flag span{color:var(--ink-2);font-size:13px}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+
+.row{display:grid;grid-template-columns:minmax(0,150px) minmax(0,1fr) auto;gap:14px;align-items:center;padding:9px 16px;border-top:1px solid var(--line-2)}
+.row:first-of-type{border-top:0}
+.row .nm{color:var(--ink);display:flex;flex-direction:column;gap:1px;min-width:0}
+.row .nm small{color:var(--muted);font-size:12px}
+.row .pr{text-align:right;font:500 15px var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.row .pr small{display:block;font:11.5px var(--mono);color:var(--muted)}
+.spark{width:100%;max-width:240px;height:40px;display:block}
+.pill{display:inline-block;font:500 11px/1.6 var(--sans);border-radius:999px;padding:0 8px;white-space:nowrap;background:var(--sunk);color:var(--ink-2)}
+.p-good{background:var(--good-soft);color:var(--good)}
+.p-warn{background:var(--warn-soft);color:var(--warn)}
+.p-bad{background:var(--bad-soft);color:var(--bad)}
+.p-line{background:none;color:var(--muted);box-shadow:inset 0 0 0 1px var(--line)}
+.list{margin:0;padding:10px 16px 12px 34px;display:flex;flex-direction:column;gap:4px;color:var(--ink-2)}
+
+.path{border-top:1px solid var(--line-2)}
+.path:first-of-type{border-top:0}
+.path summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:22px minmax(0,1fr) minmax(60px,160px) 44px;gap:12px;align-items:center;padding:10px 16px}
+.path summary::-webkit-details-marker{display:none}
+.path summary:hover{background:var(--sunk)}
+.path .rk{font:12px var(--mono);color:var(--faint)}
+.path .pn{display:flex;flex-direction:column;gap:2px;min-width:0}
+.path .pn b{font-weight:500;color:var(--ink)}
+.path .pn .pill{align-self:flex-start}
+.bar{height:6px;border-radius:3px;background:var(--line-2);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:3px;background:var(--accent)}
+.path .pct{font:500 13px var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.path-b{padding:0 16px 14px 50px;display:flex;flex-direction:column;gap:10px;color:var(--ink-2)}
+.path-b p{margin:0}
+.path-b h4{margin:0 0 4px;font:500 11px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.path-b ul{margin:0;padding-left:18px}
+.tag{display:inline-block;font-size:12px;border:1px solid var(--line);border-radius:6px;padding:1px 7px;margin:0 4px 4px 0;color:var(--ink-2);background:var(--bg)}
+
+.empty{background:var(--sunk);border:1px dashed var(--line);border-radius:var(--r);padding:22px;color:var(--ink-2);display:flex;flex-direction:column;gap:10px}
+.empty ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.working{display:flex;align-items:center;gap:10px;color:var(--ink-2)}
+.working i{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 1.1s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25;transform:scale(.7)}}
+
+.m{display:none}
+.math-on .m{display:revert}
+.math{background:var(--sunk);border:1px solid var(--line-2);border-radius:var(--r);padding:14px 16px;font-size:13px;color:var(--ink-2);display:none;flex-direction:column;gap:8px}
+.math-on .math{display:flex}
+.math h4{margin:0;font:500 11px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.math code,.mono{font:12px var(--mono);color:var(--ink)}
+.math .scroll table{border-collapse:collapse;width:100%;font-size:12.5px;min-width:420px}
+.math td,.math th{padding:4px 8px 4px 0;vertical-align:top;border-top:1px solid var(--line);text-align:left}
+.math th{font-weight:500;color:var(--muted);border-top:0}
+.foot{color:var(--faint);font-size:12px;margin:4px 0 0}
+
+@media (max-width:900px){
+  .view,.home{grid-template-columns:1fr}
+  .home{min-height:0;gap:8px}
+  .hero-art{height:360px}
+}
+@media (max-width:560px){
+  .brand span{display:none}
+  .row{grid-template-columns:minmax(0,1fr) auto}
+  .row .sp{grid-column:1/-1;grid-row:2}
+  .path summary{grid-template-columns:18px minmax(0,1fr) 40px}
+  .path .bar{display:none}
+  .path-b{padding-left:46px}
+  .head h2{font-size:26px}
+  .hero-art{height:300px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <button class="brand" id="brand" aria-label="Student Compass home"><h1>Student Compass</h1><span>Marks and career guidance for class 12</span></button>
+    <button class="switch" id="math-toggle" role="switch" aria-checked="false"><span class="track"></span>Show scoring</button>
+    <button class="switch" id="theme-toggle" role="switch" aria-checked="false"><span class="track"></span>Dark</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tab-home" data-view="home" aria-selected="true">Home</button>
+    <button role="tab" id="tab-academics" data-view="academics" aria-selected="false">Academic performance</button>
+    <button role="tab" id="tab-careers" data-view="careers" aria-selected="false">Career guidance</button>
+  </div>
+
+  <section class="home" id="view-home" role="tabpanel" aria-labelledby="tab-home">
+    <div class="hero-text">
+      <span class="eyebrow">For class 12 students</span>
+      <h2 class="display">Many paths ahead. Find the one that <em>points to you.</em></h2>
+      <p class="lede">See where your marks are heading before the board exam, what to work on next, and which careers fit the things you already enjoy.</p>
+      <div class="cta">
+        <button class="btn" data-go="academics">Check my marks</button>
+        <button class="btn ghost" data-go="careers">Find my path</button>
+      </div>
+      <div class="facts"><span><b>4</b>tests to a board prediction</span><span><b>10</b>career paths</span><span><b>4</b>questions written for you</span></div>
+    </div>
+    <div class="hero-art"><canvas id="paths" aria-hidden="true"></canvas></div>
+  </section>
+
+  <section class="view" id="view-academics" role="tabpanel" aria-labelledby="tab-academics" hidden>
+    <div class="inputs">
+      <div class="card">
+        <div class="card-h"><h3>Student</h3><small id="saved">sample student</small></div>
+        <div class="card-b">
+          <label class="field"><span>Name</span><input type="text" id="name"></label>
+          <label class="field"><span>Stream</span><select id="stream"></select></label>
+          <label class="field"><span>Attendance</span><span class="suffix"><input type="number" id="attendance" min="0" max="100"><i>%</i></span></label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>Marks</h3><button class="link" id="clear-marks">Clear marks</button></div>
+        <div class="scroll"><table class="marks" id="marks"></table></div>
+        <div class="card-b"><p class="hint">Percent scored in each test. Leave a box empty if the test hasn't happened yet.</p></div>
+      </div>
+    </div>
+    <div class="results" id="academic-results"></div>
+  </section>
+
+  <section class="view" id="view-careers" role="tabpanel" aria-labelledby="tab-careers" hidden>
+    <div class="inputs">
+      <div class="card">
+        <div class="card-h"><h3>About you</h3><small>in your own words</small></div>
+        <div class="card-b">
+          <textarea id="about" rows="5" aria-label="About you"></textarea>
+          <p class="hint">What you do in your free time, what you enjoy at school, what you'd like your work to feel like. A few lines is enough.</p>
+        </div>
+      </div>
+      <div class="card"><div class="card-h"><h3>How good are you at…</h3><small>1 = not yet · 5 = very</small></div><div class="card-b" id="skills"></div></div>
+      <div class="actions"><button class="btn" id="write">Write my questions</button></div>
+      <div id="questions" class="inputs"></div>
+    </div>
+    <div class="results" id="career-results"></div>
+  </section>
+</div>
+
+<script>
+const TERMS = ["Unit Test 1", "Half-Yearly", "Unit Test 2", "Pre-Board"];
+const SHORT = ["UT 1", "Half-yr", "UT 2", "Pre-board"];
+const STREAMS = {
+  pcm: {name: "Science (PCM)", subjects: ["Physics", "Chemistry", "Mathematics", "English", "Computer Science"]},
+  pcb: {name: "Science (PCB)", subjects: ["Physics", "Chemistry", "Biology", "English", "Physical Education"]},
+  commerce: {name: "Commerce", subjects: ["Accountancy", "Business Studies", "Economics", "English", "Mathematics"]},
+  humanities: {name: "Humanities", subjects: ["History", "Political Science", "Psychology", "English", "Economics"]},
+};
+const SKILLS = {maths: "Maths and logic", comm: "Speaking and writing", creative: "Creativity", empathy: "Caring for others", lead: "Leading and organising", hands: "Hands-on and technical"};
+const SAMPLE = {
+  name: "Ananya", stream: "pcm", attendance: 82,
+  marks: {Physics: [68, 72, 70, 78], Chemistry: [74, 70, 66, 63], Mathematics: [85, 88, 90, 92], English: [80, 78, 82, 84], "Computer Science": [88, 91, 89, 94]},
+};
+const SAMPLE_ABOUT = "I spend most evenings making small games in Scratch and Python, and I like figuring out why my code breaks. Maths is my favourite subject, chemistry not so much. I help my cousin with his phone and laptop problems.";
+const SAMPLE_SKILLS = {maths: 5, comm: 3, creative: 4, empathy: 2, lead: 3, hands: 3};
+const STUDENT_KEY = "compass-student";
+
+const state = {student: null, skills: {...SAMPLE_SKILLS}, session: null, answers: [], report: null, busy: null, error: null};
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const round = x => Math.round(x);
+const firstName = () => (state.student?.name.trim().split(/\s+/)[0] || "you");
+const subjects = () => STREAMS[state.student.stream].subjects;
+
+async function api(method, path, body){
+  const res = await fetch(path, {method, headers: body ? {"Content-Type": "application/json"} : {}, body: body ? JSON.stringify(body) : undefined});
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok){
+    const detail = Array.isArray(data.detail) ? data.detail.map(d => d.msg).join("; ") : data.detail;
+    throw new Error(detail || `The server answered ${res.status}`);
+  }
+  return data;
+}
+const remember = id => { try { localStorage.setItem(STUDENT_KEY, String(id)); } catch (e) {} };
+const recall = () => { try { return localStorage.getItem(STUDENT_KEY); } catch (e) { return null; } };
+
+/* ---------- academics ---------- */
+
+let saveTimer = null;
+function studentBody(){ const s = state.student; return {name: s.name || "Student", stream: s.stream, attendance: s.attendance, marks: s.marks}; }
+function scheduleSave(){
+  document.getElementById("saved").textContent = "saving…";
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    try {
+      state.student = await api("PUT", `/api/students/${state.student.id}`, studentBody());
+      document.getElementById("saved").textContent = "saved";
+      renderAcademics();
+    } catch (e) { document.getElementById("saved").textContent = "not saved: " + e.message; }
+  }, 300);
+}
+
+function spark(values, p){
+  const W = 240, H = 40, padX = 6, padY = 5, slots = TERMS.length + 1;
+  const x = i => padX + i * (W - 2 * padX) / (slots - 1);
+  const lowest = Math.min(...values.filter(v => v !== null), p.lo);
+  const floor = Math.min(90, Math.max(0, Math.floor((lowest - 5) / 10) * 10));
+  const y = v => padY + (100 - v) * (H - 2 * padY) / (100 - floor);
+  const pts = values.map((v, i) => [i, v]).filter(q => q[1] !== null);
+  const line = pts.map(([i, v], k) => `${k ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("");
+  const area = pts.length > 1 ? `${line}L${x(pts[pts.length - 1][0]).toFixed(1)},${H - padY}L${x(pts[0][0]).toFixed(1)},${H - padY}Z` : "";
+  const [li, lv] = pts[pts.length - 1], bx = x(TERMS.length);
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Marks over the year and the board prediction">
+    <line x1="${padX}" x2="${W - padX}" y1="${y(floor)}" y2="${y(floor)}" stroke="var(--line)" stroke-width="1" vector-effect="non-scaling-stroke"/>
+    ${area ? `<path d="${area}" fill="var(--sunk)" stroke="none"/>` : ""}
+    <path d="${line}" fill="none" stroke="var(--ink-2)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+    <line x1="${x(li)}" y1="${y(lv)}" x2="${bx}" y2="${y(p.mid)}" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/>
+    <rect x="${bx - 3}" y="${y(p.hi)}" width="6" height="${Math.max(2, y(p.lo) - y(p.hi))}" rx="3" fill="var(--accent-soft)"/>
+    ${pts.map(([i, v]) => `<circle cx="${x(i)}" cy="${y(v)}" r="2.6" fill="var(--surface)" stroke="var(--ink-2)" stroke-width="1.5" vector-effect="non-scaling-stroke"><title>${TERMS[i]}: ${v}</title></circle>`).join("")}
+    <circle cx="${bx}" cy="${y(p.mid)}" r="4" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"><title>Board prediction: ${round(p.mid)} (${round(p.lo)}–${round(p.hi)})</title></circle>
+  </svg>`;
+}
+
+function trendPill(p){
+  if (p.tests < 2) return `<span class="pill p-line">one test</span>`;
+  if (p.slope >= 2) return `<span class="pill p-good">improving</span>`;
+  if (p.slope <= -2) return `<span class="pill p-bad">falling</span>`;
+  return `<span class="pill p-line">steady</span>`;
+}
+
+function renderAcademics(){
+  const r = state.student.report, el = document.getElementById("academic-results");
+  if (!r.overall){
+    el.innerHTML = `<div class="head"><span class="eyebrow">Predicted board result</span><h2>Add some marks to see a prediction</h2>
+      <div class="by">Fill in at least one test for any subject. The prediction updates as you type.</div></div>`;
+    return;
+  }
+  const o = r.overall, att = state.student.attendance;
+  el.innerHTML = `
+    <div class="head">
+      <span class="eyebrow">Predicted board result</span>
+      <h2>${esc(firstName())} is on track for about ${round(o.mid)}%</h2>
+      <div class="by">Likely between ${round(o.lo)}% and ${round(o.hi)}%, based on ${o.tests} ${o.tests === 1 ? "test" : "tests"} and ${att}% attendance.</div>
+      <div class="stats"><span><b>${o.confidence}</b>confidence</span><span><b>${o.grade}</b>average grade</span><span><b>${r.strengths.length}</b>${r.strengths.length === 1 ? "strength" : "strengths"}</span><span><b>${r.advice.length}</b>to work on</span></div>
+    </div>
+    ${r.advice.length ? `<div class="flags"><h3><span class="dot"></span>Where to improve</h3>${r.advice.map(i => `<div class="flag"><b>${esc(i.title)}</b><span>${esc(i.detail)}</span></div>`).join("")}</div>`
+      : `<div class="flags ok"><h3><span class="dot"></span>No warning signs</h3><div class="flag"><span>Every subject is steady or rising and attendance is above 75%. Keep the same routine through the pre-boards.</span></div></div>`}
+    <section class="sec"><h3>Subjects<small>tests → board</small></h3>
+      ${r.subjects.map(s => { const p = s.prediction; return p ? `<div class="row">
+        <div class="nm">${esc(s.subject)}<small>${trendPill(p)}</small></div>
+        <div class="sp">${spark(s.values, p)}<div class="m mono">trend ${p.slope >= 0 ? "+" : ""}${p.slope.toFixed(1)}/test · spread ±${p.spread.toFixed(1)}${p.penalty ? ` · attendance −${p.penalty.toFixed(1)}` : ""}</div></div>
+        <div class="pr">${round(p.mid)} <span class="pill">${p.grade}</span><small>${round(p.lo)}–${round(p.hi)}</small></div>
+      </div>` : `<div class="row"><div class="nm">${esc(s.subject)}</div><div class="sp hint">No marks yet</div><div></div></div>`; }).join("")}
+    </section>
+    ${r.strengths.length ? `<section class="sec"><h3>Strengths<small>${r.strengths.length}</small></h3><ul class="list">${r.strengths.map(t => `<li>${esc(t)}</li>`).join("")}</ul></section>` : ""}
+    <div class="math">
+      <h4>How the prediction works</h4>
+      <div>For each subject: draw the best straight line through the tests, then carry <code>0.5×</code> of its slope forward to the board exam. One good test should not count as a habit.</div>
+      <div>Likely range: <code>± (3 + spread of the tests + 2 for each test not taken yet)</code>. Attendance under 75% takes <code>0.3</code> points off per missing percent.</div>
+      <div>Confidence is the width of that range: ±5 or less is high, up to ±9 is medium, wider is low.</div>
+    </div>
+    <p class="foot">The dot at the end of each line is the board prediction; the shaded bar is its likely range. Hover a point to see its mark.</p>`;
+}
+
+function renderStudentInputs(){
+  const s = state.student;
+  document.getElementById("name").value = s.name;
+  document.getElementById("stream").value = s.stream;
+  document.getElementById("attendance").value = s.attendance;
+  renderMarksTable();
+}
+
+function renderMarksTable(){
+  document.getElementById("marks").innerHTML = `<thead><tr><th>Subject</th>${SHORT.map((s, i) => `<th title="${TERMS[i]}">${s}</th>`).join("")}</tr></thead>
+    <tbody>${subjects().map((s, si) => `<tr><td>${esc(s)}</td>${TERMS.map((_, i) => {
+      const v = (state.student.marks[s] || [])[i];
+      return `<td><input type="number" min="0" max="100" inputmode="numeric" id="m-${si}-${i}" data-subject="${esc(s)}" data-term="${i}" aria-label="${esc(s)}, ${TERMS[i]}" value="${v ?? ""}"></td>`;
+    }).join("")}</tr>`).join("")}</tbody>`;
+}
+
+/* ---------- careers ---------- */
+
+function renderSkills(){
+  document.getElementById("skills").innerHTML = Object.entries(SKILLS).map(([k, label]) => `<div class="skill" role="radiogroup" aria-label="${esc(label)}"><span>${esc(label)}</span><span class="seg">${[1, 2, 3, 4, 5].map(n =>
+    `<label><input type="radio" name="s-${k}" id="s-${k}-${n}" value="${n}" ${state.skills[k] === n ? "checked" : ""}><span>${n}</span></label>`).join("")}</span></div>`).join("");
+}
+
+function renderQuestions(){
+  const el = document.getElementById("questions");
+  if (!state.session){ el.innerHTML = ""; return; }
+  el.innerHTML = state.session.questions.map((q, i) => `<div class="card"><div class="card-b">
+      <span class="q-n">Question ${i + 1} of ${state.session.questions.length}</span>
+      <label class="q-t" for="a-${i}">${esc(q.text)}</label>
+      <textarea id="a-${i}" data-answer="${i}" rows="2" placeholder="Answer in your own words">${esc(state.answers[i] || "")}</textarea>
+      <div class="taps" aria-label="Or tap an option">${q.options.map((o, j) => `<button type="button" data-q="${i}" data-o="${j}">${esc(o.text)}</button>`).join("")}</div>
+    </div></div>`).join("") + `<div class="actions"><button class="btn" id="find">Find my path</button></div>`;
+}
+
+function renderCareers(){
+  const el = document.getElementById("career-results");
+  const err = state.error ? `<div class="err">${esc(state.error)}</div>` : "";
+  if (state.busy){
+    el.innerHTML = `${err}<div class="empty"><div class="working"><i></i>${state.busy === "write" ? "Writing four questions from what you told us…" : "Reading your answers and ranking the paths…"}</div></div>`;
+    return;
+  }
+  if (!state.report){
+    el.innerHTML = `${err}<div class="head"><span class="eyebrow">Career guidance</span><h2>${state.session ? "Answer the questions on the left" : "Start with a few lines about yourself"}</h2>
+      <div class="by">There are no right answers. Write the way you'd talk to a friend.</div></div>
+      <div class="empty"><ol><li>Tell us about yourself and rate your skills.</li><li>You get four questions written around what you said.</li><li>Answer in your own words, or tap the option that fits.</li><li>See which paths match, why, and what to do after class 12.</li></ol></div>`;
+    return;
+  }
+  const rep = state.report, ranked = rep.ranked, top = ranked[0], conf = rep.confidence, pct = r => round(r.score * 100);
+  const why = [];
+  if (conf.reading < 0.6) why.push("Some answers were hard to read, or said “not sure”.");
+  if (conf.margin < 0.04) why.push(`${top.name} and ${ranked[1].name} are almost tied.`);
+  const label = (q, key) => key === "none" ? "none of these" : q.options[Number(key.slice(1))].text;
+  el.innerHTML = `${err}
+    <div class="head">
+      <span class="eyebrow">Strongest match for ${esc(firstName())}</span>
+      <h2>${esc(top.name)}</h2>
+      <div class="by">${esc(top.blurb)}</div>
+      <div class="stats"><span><b>${pct(top)}%</b>match</span><span><b>${conf.word}</b>confidence</span><span><b>${pct(ranked[1])}%</b>next best · ${esc(ranked[1].name)}</span></div>
+    </div>
+    ${conf.word !== "High" && why.length ? `<div class="flags"><h3><span class="dot"></span>Not settled yet</h3><div class="flag"><span>${esc(why.join(" "))} Answering in a bit more detail, or talking it through with a teacher or counsellor, will sharpen this.</span></div></div>` : ""}
+    <section class="sec"><h3>All paths<small>${ranked.length} ranked</small></h3>
+      ${ranked.map((r, i) => `<details class="path" ${i < 3 ? "open" : ""}>
+        <summary><span class="rk">${i + 1}</span><span class="pn"><b>${esc(r.name)}</b>${r.open ? "" : `<span class="pill p-warn">${esc(r.needs)}</span>`}</span><span class="bar"><i style="width:${pct(r)}%"></i></span><span class="pct">${pct(r)}%</span></summary>
+        <div class="path-b">
+          <p>${esc(r.blurb)}</p>
+          <div><h4>Why it fits</h4>${r.reasons.length ? `<ul>${r.reasons.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : `<p class="hint">Nothing in your answers points strongly here.</p>`}</div>
+          <div><h4>Next steps after class 12</h4><div>${r.degrees.map(d => `<span class="tag">${esc(d)}</span>`).join("")}</div><div>${r.exams.map(e => `<span class="tag">${esc(e)}</span>`).join("")}</div></div>
+          <div class="m mono">${Object.entries(r.parts).map(([k, v]) => `${k} ${v.toFixed(2)}`).join(" · ")}${r.open ? "" : " · ×0.6 stream"} = ${r.score.toFixed(2)}</div>
+        </div>
+      </details>`).join("")}
+    </section>
+    <div class="math">
+      <h4>How the match works</h4>
+      <div>An OpenAI model wrote the questions, with one option for each group of career paths. Jev read each answer and gave a probability for every option, and a yes-probability for “enjoys this subject”.</div>
+      <div class="scroll"><table><tr><th>Your answer</th><th>Jev's closest option</th><th>p</th><th>conf</th></tr>${rep.questions.map((q, i) => {
+        const j = rep.judgments.questions[i], [key, p] = Object.entries(j.probabilities).sort((a, b) => b[1] - a[1])[0];
+        return `<tr><td>${esc(state.answers[i] || "")}</td><td>${esc(label(q, key))}</td><td class="mono">${p.toFixed(2)}</td><td class="mono">${j.confidence.toFixed(2)}</td></tr>`; }).join("")}</table></div>
+      <div>Enjoys: ${Object.entries(rep.judgments.likes).map(([s, p]) => `${esc(s)} <code>${p.toFixed(2)}</code>`).join(" · ")}</div>
+      <div><code>match = 0.40·interests + 0.30·skills + 0.15·enjoyed subjects + 0.15·marks</code>, ×0.6 when the stream doesn't open the path.</div>
+      <div>Confidence <code>${conf.value.toFixed(2)} = 0.5·Jev's reading ${conf.reading.toFixed(2)} + 0.5·min(1, gap ${conf.margin.toFixed(3)} ÷ 0.08)</code></div>
+    </div>
+    <p class="foot">This is a starting point for a conversation with a teacher or counsellor, not a decision.</p>`;
+}
+
+async function writeQuestions(){
+  const about = document.getElementById("about").value.trim();
+  if (about.length < 10){ state.error = "Write at least a sentence about yourself first."; renderCareers(); return; }
+  Object.assign(state, {busy: "write", error: null, report: null});
+  document.getElementById("write").disabled = true;
+  renderCareers();
+  try {
+    state.session = await api("POST", `/api/students/${state.student.id}/career-sessions`, {about_me: about});
+    state.answers = state.session.questions.map(() => "");
+  } catch (e) { state.error = e.message; }
+  state.busy = null;
+  document.getElementById("write").disabled = false;
+  document.getElementById("write").textContent = state.session ? "Write new questions" : "Write my questions";
+  renderQuestions(); renderCareers();
+}
+
+async function findPath(){
+  const blank = state.answers.findIndex(a => !a.trim());
+  if (blank >= 0){ state.error = `Answer question ${blank + 1}, even with “not sure”.`; renderCareers(); document.getElementById(`a-${blank}`).focus(); return; }
+  Object.assign(state, {busy: "find", error: null});
+  document.getElementById("find").disabled = true;
+  renderCareers();
+  try {
+    state.report = await api("POST", `/api/career-sessions/${state.session.id}/answers`, {answers: state.answers, skills: state.skills});
+  } catch (e) { state.error = e.message; }
+  state.busy = null;
+  document.getElementById("find").disabled = false;
+  renderCareers();
+  if (innerWidth <= 900) document.getElementById("career-results").scrollIntoView({behavior: "smooth"});
+}
+
+/* ---------- home animation: a compass at the root of branching paths ---------- */
+
+const NODES = [
+  {name: "Medicine & Healthcare", g: 0}, {name: "Psychology & Social Work", g: 0}, {name: "Law & Public Policy", g: 0},
+  {name: "Research & Pure Science", g: 1}, {name: "Computer Science & AI", g: 1}, {name: "Engineering", g: 1},
+  {name: "Design & Architecture", g: 2}, {name: "Media, Writing & Arts", g: 2}, {name: "Business & Management", g: 2}, {name: "Commerce & Finance", g: 2},
+];
+
+function pathsAnimation(canvas){
+  const ctx = canvas.getContext("2d");
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const CYCLE = 6.4, INTRO = 2.2;
+  const order = NODES.map((_, i) => i).sort(() => Math.random() - .5);
+  const particles = Array.from({length: 16}, () => ({leaf: Math.floor(Math.random() * NODES.length), t: Math.random(), speed: .05 + Math.random() * .05}));
+  let W = 0, H = 0, geo = null, colors = {};
+  const start = performance.now();
+
+  function readColors(){
+    const cs = getComputedStyle(document.documentElement);
+    for (const k of ["ink", "muted", "faint", "line", "accent", "surface", "bg"]) colors[k] = cs.getPropertyValue("--" + k).trim();
+  }
+
+  function layout(){
+    const r = canvas.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1);
+    W = r.width; H = r.height;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const root = {x: W * .5, y: H * .9}, fork = {x: W * .5, y: H * .68};
+    const groups = [{x: W * .24, y: H * .47}, {x: W * .5, y: H * .43}, {x: W * .76, y: H * .47}];
+    const leaves = NODES.map((_, i) => {
+      const u = i / (NODES.length - 1), d = (u - .5) * 2;
+      return {x: W * (.07 + .86 * u), y: H * (.13 + .11 * d * d) + (i % 2 ? H * .045 : 0)};
+    });
+    const trunk = {a: root, b: fork, depth: 0};
+    const branches = groups.map(g => ({a: fork, b: g, depth: 1}));
+    const twigs = leaves.map((l, i) => ({a: groups[NODES[i].g], b: l, depth: 2}));
+    geo = {root, groups, leaves, trunk, branches, twigs, edges: [trunk, ...branches, ...twigs]};
+  }
+
+  const point = (e, t) => {
+    const {a, b} = e, dy = a.y - b.y, u = 1 - t;
+    const c1 = {x: a.x, y: a.y - dy * .55}, c2 = {x: b.x, y: b.y + dy * .55};
+    return {x: u*u*u*a.x + 3*u*u*t*c1.x + 3*u*t*t*c2.x + t*t*t*b.x, y: u*u*u*a.y + 3*u*u*t*c1.y + 3*u*t*t*c2.y + t*t*t*b.y};
+  };
+  const route = leaf => [geo.trunk, geo.branches[NODES[leaf].g], geo.twigs[leaf]];
+  const along = (leaf, t) => { const r = route(leaf), k = Math.min(2, Math.floor(t * 3)); return point(r[k], t * 3 - k); };
+  const ease = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
+  const clamp01 = t => Math.max(0, Math.min(1, t));
+  const aim = leaf => Math.atan2(geo.leaves[leaf].y - geo.root.y, geo.leaves[leaf].x - geo.root.x);
+
+  function stroke(e, upto, color, width, alpha){
+    if (upto <= 0 || alpha <= 0) return;
+    ctx.beginPath();
+    for (let s = 0; s <= 28; s++){ const p = point(e, upto * s / 28); s ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y); }
+    ctx.globalAlpha = alpha; ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = "round"; ctx.stroke(); ctx.globalAlpha = 1;
+  }
+
+  function label(text, x, y, color, weight, size, alpha){
+    if (alpha <= 0) return;
+    ctx.font = `${weight} ${size}px Geist, ui-sans-serif, system-ui, sans-serif`;
+    const w = ctx.measureText(text).width;
+    ctx.globalAlpha = alpha; ctx.fillStyle = color; ctx.textAlign = "left"; ctx.textBaseline = "bottom";
+    ctx.fillText(text, Math.max(4, Math.min(W - w - 4, x - w / 2)), y);
+    ctx.globalAlpha = 1;
+  }
+
+  function compass(angle){
+    const {x, y} = geo.root, r = 15;
+    ctx.beginPath(); ctx.arc(x, y, r + 6, 0, Math.PI * 2); ctx.fillStyle = colors.bg; ctx.fill();
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = colors.surface; ctx.fill();
+    ctx.lineWidth = 1; ctx.strokeStyle = colors.line; ctx.stroke();
+    for (let k = 0; k < 8; k++){
+      const a = k * Math.PI / 4, l = k % 2 ? 2.5 : 4;
+      ctx.beginPath(); ctx.moveTo(x + Math.cos(a) * (r - l), y + Math.sin(a) * (r - l)); ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+      ctx.strokeStyle = colors.faint; ctx.stroke();
+    }
+    const tip = (len, side) => ({x: x + Math.cos(angle + side) * len, y: y + Math.sin(angle + side) * len});
+    const n = tip(r - 3, 0), s = tip(r - 5, Math.PI), left = tip(3, Math.PI / 2), right = tip(3, -Math.PI / 2);
+    ctx.beginPath(); ctx.moveTo(n.x, n.y); ctx.lineTo(left.x, left.y); ctx.lineTo(right.x, right.y); ctx.closePath(); ctx.fillStyle = colors.accent; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(left.x, left.y); ctx.lineTo(right.x, right.y); ctx.closePath(); ctx.fillStyle = colors.muted; ctx.fill();
+    ctx.beginPath(); ctx.arc(x, y, 1.6, 0, Math.PI * 2); ctx.fillStyle = colors.surface; ctx.fill();
+  }
+
+  function frame(now){
+    if (canvas.offsetParent === null){ if (!still) requestAnimationFrame(frame); return; }  // home view hidden
+    const t = still ? INTRO + 3.4 : (now - start) / 1000;
+    ctx.clearRect(0, 0, W, H);
+
+    for (const e of geo.edges) stroke(e, ease(clamp01((t - e.depth * .55) / .8)), colors.line, 1.25, 1);
+
+    const k = Math.max(0, Math.floor((t - INTRO) / CYCLE)), c = t < INTRO ? -1 : (t - INTRO) % CYCLE;
+    const active = order[k % order.length], prev = order[(k + order.length - 1) % order.length];
+
+    if (!still) for (const p of particles){
+      p.t += p.speed / 60;
+      if (p.t >= 1){ p.t = 0; p.leaf = Math.floor(Math.random() * NODES.length); }
+      const q = along(p.leaf, p.t);
+      ctx.globalAlpha = .55 * Math.sin(Math.PI * p.t) * clamp01((t - 1) / 1.5);
+      ctx.beginPath(); ctx.arc(q.x, q.y, 1.5, 0, Math.PI * 2); ctx.fillStyle = colors.muted; ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    const glow = c < 0 ? 0 : c < 4.8 ? 1 : 1 - clamp01((c - 4.8) / 1);
+    if (c >= 0){
+      const grow = clamp01((c - .7) / 1.6);
+      route(active).forEach((e, i) => stroke(e, ease(clamp01(grow * 3 - i)), colors.accent, 2, glow));
+    }
+
+    geo.leaves.forEach((l, i) => {
+      const on = c >= 0 && i === active, arrived = on ? clamp01((c - 2.2) / .5) : 0;
+      ctx.beginPath(); ctx.arc(l.x, l.y, on ? 3 + arrived * 2 * glow : 3, 0, Math.PI * 2);
+      ctx.globalAlpha = clamp01((t - 1.2) / .6);
+      ctx.fillStyle = arrived * glow > .5 ? colors.accent : colors.surface; ctx.fill();
+      ctx.lineWidth = 1.25; ctx.strokeStyle = arrived * glow > .5 ? colors.accent : colors.faint; ctx.stroke(); ctx.globalAlpha = 1;
+      if (on && c > 2.2 && c < 3.4){
+        const ring = clamp01((c - 2.2) / 1.2);
+        ctx.beginPath(); ctx.arc(l.x, l.y, 5 + ring * 14, 0, Math.PI * 2);
+        ctx.globalAlpha = (1 - ring) * .8; ctx.strokeStyle = colors.accent; ctx.lineWidth = 1.25; ctx.stroke(); ctx.globalAlpha = 1;
+      }
+      if (on) label(NODES[i].name, l.x, l.y - 10, colors.ink, 500, 13, arrived * glow);
+      else if (W >= 520){
+        const near = c >= 0 && Math.abs(i - active) <= 2;  // the lit label is wide; clear its neighbours
+        label(NODES[i].name.split(/ [&,]/)[0], l.x, l.y - 10, colors.faint, 400, 11, clamp01((t - 1.4) / .8) * (near ? 1 - glow : 1));
+      }
+    });
+
+    for (const g of geo.groups){ ctx.beginPath(); ctx.arc(g.x, g.y, 2, 0, Math.PI * 2); ctx.fillStyle = colors.faint; ctx.fill(); }
+
+    let angle = -Math.PI / 2;
+    if (c >= 0){
+      const from = k === 0 ? -Math.PI / 2 : aim(prev), to = aim(active);
+      angle = to + (from - to) * Math.exp(-4.2 * c) * Math.cos(8 * c);  // swings past, then settles
+    }
+    compass(angle);
+    if (!still) requestAnimationFrame(frame);
+  }
+
+  readColors(); layout();
+  new ResizeObserver(() => { layout(); if (still) frame(performance.now()); }).observe(canvas);
+  new MutationObserver(() => { readColors(); if (still) frame(performance.now()); }).observe(document.documentElement, {attributes: true, attributeFilter: ["data-theme"]});
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", readColors);
+  requestAnimationFrame(frame);
+  return {redraw(){ layout(); if (still) frame(performance.now()); }};
+}
+
+/* ---------- wiring ---------- */
+
+const art = pathsAnimation(document.getElementById("paths"));
+
+function showView(view){
+  for (const b of document.querySelectorAll(".tabs button")) b.setAttribute("aria-selected", b.dataset.view === view);
+  for (const v of ["home", "academics", "careers"]) document.getElementById("view-" + v).hidden = v !== view;
+  if (view === "home") art.redraw();
+}
+const go = view => { showView(view); history.replaceState(null, "", "#" + view); scrollTo({top: 0}); };
+for (const b of document.querySelectorAll(".tabs button")) b.addEventListener("click", () => go(b.dataset.view));
+for (const b of document.querySelectorAll("[data-go]")) b.addEventListener("click", () => go(b.dataset.go));
+document.getElementById("brand").addEventListener("click", () => go("home"));
+
+document.getElementById("stream").innerHTML = Object.entries(STREAMS).map(([k, s]) => `<option value="${k}">${s.name}</option>`).join("");
+document.getElementById("name").addEventListener("input", e => { state.student.name = e.target.value; scheduleSave(); });
+document.getElementById("stream").addEventListener("change", e => {
+  state.student.stream = e.target.value; state.session = null; state.report = null;
+  renderMarksTable(); renderQuestions(); renderCareers(); scheduleSave();
+});
+document.getElementById("attendance").addEventListener("input", e => { const v = parseFloat(e.target.value); state.student.attendance = isNaN(v) ? 0 : Math.min(100, Math.max(0, v)); scheduleSave(); });
+document.getElementById("marks").addEventListener("input", e => {
+  const s = e.target.dataset.subject, i = Number(e.target.dataset.term), v = parseFloat(e.target.value);
+  state.student.marks[s] = state.student.marks[s] || [null, null, null, null];
+  state.student.marks[s][i] = isNaN(v) ? null : Math.min(100, Math.max(0, v));
+  scheduleSave();
+});
+document.getElementById("clear-marks").addEventListener("click", () => { state.student.marks = {}; renderMarksTable(); scheduleSave(); });
+
+document.getElementById("skills").addEventListener("change", e => { if (e.target.name?.startsWith("s-")) state.skills[e.target.name.slice(2)] = Number(e.target.value); });
+document.getElementById("write").addEventListener("click", writeQuestions);
+document.getElementById("questions").addEventListener("input", e => { if (e.target.dataset.answer !== undefined) state.answers[Number(e.target.dataset.answer)] = e.target.value; });
+document.getElementById("questions").addEventListener("click", e => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  if (b.id === "find") return findPath();
+  if (b.dataset.q !== undefined){
+    const i = Number(b.dataset.q), text = state.session.questions[i].options[Number(b.dataset.o)].text;
+    state.answers[i] = text; document.getElementById(`a-${i}`).value = text;
+  }
+});
+
+const setToggle = (id, on) => document.getElementById(id).setAttribute("aria-checked", on);
+document.getElementById("math-toggle").addEventListener("click", () => {
+  const on = !document.body.classList.contains("math-on");
+  document.body.classList.toggle("math-on", on);
+  setToggle("math-toggle", on);
+});
+(function theme(){
+  let t = "light";
+  try { t = localStorage.getItem("compass-theme") || "light"; } catch (e) {}
+  document.documentElement.setAttribute("data-theme", t);
+  setToggle("theme-toggle", t === "dark");
+  document.getElementById("theme-toggle").addEventListener("click", () => {
+    t = t === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", t);
+    setToggle("theme-toggle", t === "dark");
+    try { localStorage.setItem("compass-theme", t); } catch (e) {}
+  });
+})();
+
+async function boot(){
+  const id = recall();
+  try { state.student = id ? await api("GET", `/api/students/${id}`) : null; } catch (e) { state.student = null; }
+  if (!state.student){ state.student = await api("POST", "/api/students", SAMPLE); remember(state.student.id); }
+  document.getElementById("about").value = SAMPLE_ABOUT;
+  renderStudentInputs(); renderAcademics(); renderSkills(); renderQuestions(); renderCareers();
+}
+
+showView(["academics", "careers"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "home");
+boot().catch(e => { document.getElementById("academic-results").innerHTML = `<div class="err">Couldn't reach the server: ${esc(e.message)}</div>`; });
+</script>
